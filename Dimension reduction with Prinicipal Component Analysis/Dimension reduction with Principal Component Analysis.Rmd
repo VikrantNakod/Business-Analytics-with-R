@@ -1,0 +1,142 @@
+---
+title: "Homework 1"
+author: 'Group 5: Phylisha Martinez, Carolina Munoz, Vikrant Nakod, Hareesh Rajendran, Piyusha Kulkarni'
+date: "2/8/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r Utilities}
+library(data.table)
+library(ggplot2)
+library(reshape)
+Utilities.df <- read.csv("Utilities.csv")
+Utilities.dt <- setDT(Utilities.df)
+summary(Utilities.dt)
+names(Utilities.dt)
+str(Utilities.dt)
+class(Utilities.dt)
+
+```
+
+Question 1 
+
+```{r Question 1}
+summary_stats <- function(x) {
+   c(min = min(x), max = max(x), mean = mean(x), median = median(x), sd = sd(x)) 
+}
+
+Utilities.dt[,sapply(.SD, summary_stats), .SDcols = !"Company"]
+```
+Answer 1-
+A good measure of variance in data is examining the standard deviation for each variable.
+The variable with the largest variablity is Sales.After comparing all standard deviations, it is evident sales has the largest standard deviation and consequently the largest variability. 
+
+
+
+Question 2 
+```{r Question 2}
+
+#Fixed_Charge
+ggplot(Utilities.dt) +
+  geom_boxplot(aes(y=Fixed_charge), 
+               fill = "powderblue", outlier.color = "firebrick2") + 
+  xlab("") + ggtitle("Boxplot for Fixed_Charge")
+
+#RoR 
+ggplot(Utilities.dt) +
+  geom_boxplot(aes(y=RoR), 
+               fill = "powderblue", outlier.color = "firebrick2") + 
+  xlab("") + ggtitle("Boxplot for RoR")
+
+
+#Cost
+
+ggplot(Utilities.dt) +
+  geom_boxplot(aes(y=RoR), 
+               fill = "powderblue", outlier.color = "firebrick2") + 
+  xlab("") + ggtitle("Boxplot for Cost")
+
+
+#Load_factor 
+ggplot(Utilities.dt) +
+  geom_boxplot(aes(y=Load_factor), 
+               fill = "powderblue", outlier.color = "firebrick2") + 
+  xlab("") + ggtitle("Boxplot for Load_factor")
+
+#Demand_growth 
+ggplot(Utilities.dt) +
+  geom_boxplot(aes(y=Demand_growth), 
+               fill = "powderblue", outlier.color = "firebrick2") + 
+  xlab("") + ggtitle("Boxplot for Demand_growth")
+
+#Sales
+ggplot(Utilities.dt) +
+  geom_boxplot(aes(y=Sales), 
+               fill = "powderblue", outlier.color = "firebrick2") + 
+  xlab("") + ggtitle("Boxplot for Sales")
+
+#Nuclear 
+ggplot(Utilities.dt) +
+  geom_boxplot(aes(y=Nuclear), 
+               fill = "powderblue", outlier.color = "firebrick2") + 
+  xlab("") + ggtitle("Boxplot for Nuclear")
+
+#Fuel_Cost
+ggplot(Utilities.dt) +
+  geom_boxplot(aes(y=Fuel_Cost), 
+               fill = "powderblue", outlier.color = "firebrick2") + 
+  xlab("") + ggtitle("Boxplot for Fuel_Cost")
+
+ 
+```
+Answer 2- An outlier is an observation that lies an abnormal distance from other values in a random sample from a population.Following is a statistical definition of an outlier for X:
+X < Q1 - 1.5 IQR or X # Q3 + 1.5 IQR where IQR is the difference between the 75th and 25th percentiles.
+Yes, there are extreme values for two variables.They are Fixed_charge and
+Sales. The boxplot for Fixed_charge,has a total of 4 outliers, 2 on the higher side and 2 on the lower side.
+In the boxplot for Sales,the 2 outliers are only on the higher side.
+
+
+```{r Question 3}
+cor.mat <- round(cor(Utilities.dt[,!c("Company")]),2) # rounded correlation matrix 
+melted.cor.mat <- melt(cor.mat) 
+melted.cor.mat
+ggplot(melted.cor.mat, aes(x = X1, y = X2, fill = value)) + 
+  scale_fill_gradient(low="wheat", high="orangered") +
+  geom_tile() + 
+  geom_text(aes(x = X1, y = X2, label = value)) +
+  ggtitle("Heatmap for numeric variables")+xlab("")+ylab("")+
+  theme(axis.text.x =element_text(angle=30,size=10, vjust =0.5))
+
+```
+
+Answer 3- In the above heatmap, the variables ROR and Fixed_charge have the highest correlation which is 0.64. Hence, we can say that the Rate on Return increases or decreases when the fixed_charge of the company increases or decreases.
+Also, the variables Sales and Fuel_Cost have the strongest negative correlation which is -0.56. Hence we can say that as the Fuel_cost of a company increases the sales go down and vice versa. 
+
+```{r Question 4}
+
+pca_noscale <- prcomp(na.omit(Utilities.dt[,-1]))
+summary(pca_noscale)
+pca_noscale$rotation
+
+```
+
+Answer 4- Here, we have performed PCA without scaling the variables. While some insight can possibly be drawn from it, none of the results could be considered 'significant' given the wide range of values between each variable. PCA requires the set of input variables to have similar scales of measurement. As we have not scaled the variables in the above model each variable has a different unit which resulted in 99.98 variance in the Principal component 1.For instance, the variables ROR and Sales may have different units and we cannot compare these. Therefore, in order to find the correct results we need to scale these variables and then perform the PCA.
+
+
+```{r Question 5}
+
+pca_scaled <- prcomp(Utilities.dt[,!c("Company")],scale. = T)
+summary(pca_scaled)
+pca_scaled$rotation
+```
+
+Answer 5- The interpretation did change from the unscaled PCS. Because, unlike on the unscaled where a single PCS variable will give you 99.9% information, we need to have 6 PCS variables to get 95% information. Unlike the unscaled PCS1 value where sales has the high influence, the scaled PCS1 value have influence of ROR. Because we consider only the absolute value.
+It is because each column has a different units and PCS is created by joining all the information from every column of the original table. That’s why when we scale it and generate the PCS, we get a more reliable Principal Component Value.
